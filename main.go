@@ -33,32 +33,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// userJames := &types.User{
-	// 	FirstName: "James",
-	// 	LastName:  "Smith",
-	// }
-	// doc, err := client.Database(db.DBNAME).Collection("users").InsertOne(ctx, userJames)
-	// if err != nil {
-	// 	log.Fatal("Error inserting user", err)
-	// }
-	// fmt.Println(doc)
-
-	// cur, err := client.Database(db.DBNAME).ListCollections(ctx, bson.M{})
-	// if err != nil {
-	// 	log.Fatal("Error finding collections", err)
-	// }
-
-	// var collections []*mongo.Collection
-	// for cur.Next(ctx) {
-	// 	var collection mongo.Collection
-	// 	err = cur.Decode(&collections)
-	// 	if err != nil {
-	// 		log.Fatal("Error decoding collection", err)
-	// 	}
-	// 	collections = append(collections, &collection)
-	// }
-	// fmt.Println(collections)
-
 	app := fiber.New(config)
 	apiv1 := app.Group("/api/v1")
 
@@ -66,5 +40,6 @@ func main() {
 
 	apiv1.Get("/user", userHandler.HandleListUsers)
 	apiv1.Get("/user/:id", userHandler.HandleGetUser)
+	apiv1.Post("/user", userHandler.HandleCreateUser)
 	app.Listen(*listenAddr)
 }
