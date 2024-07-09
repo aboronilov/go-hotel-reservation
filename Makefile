@@ -12,4 +12,8 @@ test:
 
 run_db:
 	@echo "Running DB..."
-	@docker run --name mongodb -p 27017:27017 -d mongo:latest 
+	@docker run --name mongodb -p 27017:27017 -d mongo:latest
+
+test:
+	@echo "Running tests..."
+	go test -v ./...
