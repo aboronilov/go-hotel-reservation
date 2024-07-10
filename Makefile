@@ -16,4 +16,8 @@ run_db:
 
 test:
 	@echo "Running tests..."
-	go test -v ./...
+	@go test -v ./...
+
+seed:
+	@echo "Seeding DB..."
+	@go run scripts/seed.go
