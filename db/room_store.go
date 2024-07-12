@@ -11,7 +11,7 @@ import (
 
 type RoomStore interface {
 	GetRoomByID(context.Context, string) (*types.Room, error)
-	GetRooms(context.Context) ([]*types.Room, error)
+	GetRooms(ctx context.Context, filter bson.M) ([]*types.Room, error)
 	CreateRoom(context.Context, *types.Room) (*types.Room, error)
 	DeleteRoomByID(context.Context, string) error
 	UpdateRoomByID(ctx context.Context, filter bson.M, params types.UpdateRoomParams) error
@@ -62,8 +62,8 @@ func (s *MongoRoomStore) GetRoomByID(ctx context.Context, id string) (*types.Roo
 	return &room, nil
 }
 
-func (s *MongoRoomStore) GetRooms(ctx context.Context) ([]*types.Room, error) {
-	cur, err := s.coll.Find(ctx, bson.M{})
+func (s *MongoRoomStore) GetRooms(ctx context.Context, filter bson.M) ([]*types.Room, error) {
+	cur, err := s.coll.Find(ctx, filter)
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +87,7 @@ func (s *MongoRoomStore) DeleteRoomByID(ctx context.Context, id string) error {
 		return err
 	}
 
-	hotel, _ := s.HotelStore.GetHotelByID(ctx, id)
+	hotel, _ := s.HotelStore.GetHotelByID(ctx, oid)
 	filter = bson.M{"_id": hotel.ID}
 	update := bson.M{"$pull": bson.M{"rooms": oid}}
 	if err := s.HotelStore.UpdateHotelByID(ctx, filter, update); err != nil {

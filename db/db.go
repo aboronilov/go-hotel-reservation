@@ -8,3 +8,9 @@ const (
 	USERS_COLLECTION = "users"
 	ROOM_COLLECTION  = "rooms"
 )
+
+type Store struct {
+	User  UserStore
+	Hotel HotelStore
+	Room  RoomStore
+}

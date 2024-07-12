@@ -36,6 +36,11 @@ func main() {
 	hotelStore := db.NewMongoHotelStore(client)
 	roomStore := db.NewMongoRoomStore(client, hotelStore)
 	userStore := db.NewMongoUserStore(client)
+	store := &db.Store{
+		User:  userStore,
+		Hotel: hotelStore,
+		Room:  roomStore,
+	}
 
 	// user
 	userHandler := api.NewUserHandler(userStore)
@@ -49,9 +54,10 @@ func main() {
 	// roomHandler := api.NewRoomHandler(roomStore)
 
 	// hotel
-	hotelHandler := api.NewHotelHandler(hotelStore, roomStore)
+	hotelHandler := api.NewHotelHandler(store)
 	apiv1.Get("/hotel", hotelHandler.HandleListHotels)
-	apiv1.Get("/hotel/:id", hotelHandler.HandleGetHotel)
+	apiv1.Get("/hotel/:id/rooms", hotelHandler.HandleGetRooms)
+	apiv1.Get("/hotel/:id", hotelHandler.HandleRetrieveHotel)
 	// apiv1.Post("/hotel", hotelHandler.HandleCreateHotel)
 	// apiv1.Put("/hotel/:id", hotelHandler.HandleUpdateHotel)
 	// apiv1.Delete("/hotel/:id", hotelHandler.HandleDeleteHotel)

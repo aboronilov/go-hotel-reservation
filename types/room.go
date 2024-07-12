@@ -16,11 +16,12 @@ const (
 )
 
 type Room struct {
-	ID        primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
-	Type      RoomType           `bson:"type" json:"type"`
-	BasePrice float64            `bson:"basePrice" json:"basePrice"`
-	Price     float64            `bson:"price" json:"price"`
-	HotelID   primitive.ObjectID `bson:"hotelID" json:"hotelID"`
+	ID      primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
+	Type    RoomType           `bson:"type" json:"type"`
+	Size    string             `bson:"size" json:"size"`
+	Seaside bool               `bson:"seaside" json:"seaside"`
+	Price   float64            `bson:"price" json:"price"`
+	HotelID primitive.ObjectID `bson:"hotelID" json:"hotelID"`
 }
 
 type UpdateRoomParams struct {
@@ -30,9 +31,6 @@ type UpdateRoomParams struct {
 
 func (p *UpdateRoomParams) ToBson() bson.M {
 	m := bson.M{}
-	if p.BasePrice > 0 {
-		m["basePrice"] = p.BasePrice
-	}
 	if p.Price > 0 {
 		m["price"] = p.Price
 	}

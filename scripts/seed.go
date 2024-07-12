@@ -31,19 +31,22 @@ func seedHotel(name, location string, rating int) {
 	}
 
 	room_1 := &types.Room{
-		HotelID:   insertedHotel.ID,
-		Type:      1,
-		BasePrice: 99.9,
+		HotelID: insertedHotel.ID,
+		Type:    1,
+		Size:    "small",
+		Price:   100,
 	}
 	room_2 := &types.Room{
-		HotelID:   insertedHotel.ID,
-		Type:      2,
-		BasePrice: 109.9,
+		HotelID: insertedHotel.ID,
+		Type:    2,
+		Size:    "normal",
+		Price:   120,
 	}
 	room_3 := &types.Room{
-		HotelID:   insertedHotel.ID,
-		Type:      3,
-		BasePrice: 129.9,
+		HotelID: insertedHotel.ID,
+		Type:    3,
+		Size:    "kingsize",
+		Price:   140,
 	}
 	rooms := []*types.Room{room_1, room_2, room_3}
 	for _, room := range rooms {
