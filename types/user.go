@@ -37,6 +37,11 @@ type UpdateUserParams struct {
 	LastName  string `json:"lastName"`
 }
 
+func IsValidPassword(hashedPassword, password string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
+	return err == nil
+}
+
 func (p *UpdateUserParams) ToBson() bson.M {
 	m := bson.M{}
 	if len(p.FirstName) > 0 {

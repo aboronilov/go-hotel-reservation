@@ -3,49 +3,57 @@ package middleware
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt"
 )
 
 func JWTAuthentication(c *fiber.Ctx) error {
-	fmt.Println("--- JWT Auth")
-
 	headers := c.GetReqHeaders()
 	token, ok := headers["Authorization"]
+
 	if !ok || len(token) != 1 {
 		return fmt.Errorf("Unauthorized")
 	}
 
-	if err := parseToken(token[0]); err != nil {
+	claims, err := validateToken(token[0])
+	if err != nil {
 		return err
 	}
 
-	return nil
+	expiresFloat := claims["expires"].(float64)
+	expires := int64(expiresFloat)
+	if time.Now().Unix() > expires {
+		return fmt.Errorf("token expired")
+	}
+
+	return c.Next()
 }
 
-func parseToken(tokenStr string) error {
+func validateToken(tokenStr string) (jwt.MapClaims, error) {
 	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
-		// Don't forget to validate the alg is what you expect:
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			fmt.Println("Invalid signing method: ", token.Header["alg"])
 			return nil, fmt.Errorf("Unauthorized")
 		}
 
 		secret := os.Getenv("JWT_SECRET")
-		fmt.Println("secret: ", secret)
-		// hmacSampleSecret is a []byte containing your secret, e.g. []byte("my_secret_key")
 		return []byte(secret), nil
 	})
 	if err != nil {
 		fmt.Println("Failed to parse JWT: ", err)
-		return fmt.Errorf("Unauthorized")
+		return nil, fmt.Errorf("unauthorized")
 	}
 
-	if claims, ok := token.Claims.(jwt.MapClaims); ok {
-		fmt.Println(claims)
+	if !token.Valid {
+		return nil, fmt.Errorf("unauthorized")
 	}
 
-	return fmt.Errorf("Unauthorized")
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return nil, fmt.Errorf("unauthorized")
+	}
 
+	return claims, nil
 }
