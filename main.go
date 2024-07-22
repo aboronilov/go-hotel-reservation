@@ -34,10 +34,12 @@ func main() {
 	hotelStore := db.NewMongoHotelStore(client)
 	roomStore := db.NewMongoRoomStore(client, hotelStore)
 	userStore := db.NewMongoUserStore(client)
+	bookingStore := db.NewMongoBookingStore(client)
 	store := &db.Store{
-		User:  userStore,
-		Hotel: hotelStore,
-		Room:  roomStore,
+		User:    userStore,
+		Hotel:   hotelStore,
+		Room:    roomStore,
+		Booking: bookingStore,
 	}
 
 	app := fiber.New(config)
@@ -59,6 +61,7 @@ func main() {
 	// room
 	roomHandler := api.NewRoomHandler(store)
 	apiv1.Post("/room/:id/book", roomHandler.HandleBookRoom)
+	apiv1.Get("/room", roomHandler.HandleListRooms)
 
 	// hotel
 	hotelHandler := api.NewHotelHandler(store)
