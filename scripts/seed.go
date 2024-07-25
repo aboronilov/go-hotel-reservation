@@ -19,17 +19,18 @@ var (
 	ctx        = context.Background()
 )
 
-func seedUser(firstName, lastName, email string) {
+func seedUser(isAdmin bool, firstName, lastName, email, password string) {
 	user, err := types.NewUserFromParams(types.CreateUserParams{
 		FirstName: firstName,
 		LastName:  lastName,
 		Email:     email,
-		Password:  "secret",
+		Password:  password,
 	})
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	user.IsAdmin = isAdmin
 	newUser, err := userStore.CreateUser(ctx, user)
 	if err != nil {
 		log.Fatal(err)
@@ -52,19 +53,16 @@ func seedHotel(name, location string, rating int) {
 
 	room_1 := &types.Room{
 		HotelID: insertedHotel.ID,
-		Type:    1,
 		Size:    "small",
 		Price:   100,
 	}
 	room_2 := &types.Room{
 		HotelID: insertedHotel.ID,
-		Type:    2,
 		Size:    "normal",
 		Price:   120,
 	}
 	room_3 := &types.Room{
 		HotelID: insertedHotel.ID,
-		Type:    3,
 		Size:    "kingsize",
 		Price:   140,
 	}
@@ -84,7 +82,8 @@ func main() {
 	seedHotel("IBIS", "New York", 5)
 	seedHotel("Tamara Hotel", "Amsterdam", 3)
 	seedHotel("Holiday INN", "Paris", 4)
-	seedUser("Jack", "Bauer", "jack_bauer@ctu.com")
+	seedUser(true, "Jack", "Bauer", "jack_bauer@ctu.com", "secret")
+	seedUser(false, "Tony", "Almeida", "tony_almeida@ctu.com", "secret")
 }
 
 func init() {
@@ -98,6 +97,9 @@ func init() {
 		log.Fatal(err)
 	}
 	if err := client.Database(db.DBNAME).Collection(db.ROOM_COLLECTION).Drop(ctx); err != nil {
+		log.Fatal(err)
+	}
+	if err := client.Database(db.DBNAME).Collection(db.USERS_COLLECTION).Drop(ctx); err != nil {
 		log.Fatal(err)
 	}
 
