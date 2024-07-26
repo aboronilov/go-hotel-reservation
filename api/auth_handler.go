@@ -68,22 +68,19 @@ func (h *AuthHandler) HandleAuthenticate(c *fiber.Ctx) error {
 	}
 
 	response := AuthResponse{
-		Token: createTokenFromUser(user),
+		Token: CreateTokenFromUser(user),
 		User:  user,
 	}
 
 	return c.JSON(response)
 }
 
-func createTokenFromUser(user *types.User) string {
+func CreateTokenFromUser(user *types.User) string {
 	now := time.Now()
 	expires := now.Add(time.Hour * 72).Unix()
 	claims := jwt.MapClaims{
 		"id":      user.ID,
 		"expires": expires,
-		// "email": user.Email,
-		// "iat": time.Now().Unix(),
-		// "exp": time.Now().Add(time.Hour * 72).Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

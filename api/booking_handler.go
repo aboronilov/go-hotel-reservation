@@ -4,7 +4,6 @@ import (
 	"errors"
 
 	"github.com/aboronilov/go-hotel-reservation/db"
-	"github.com/aboronilov/go-hotel-reservation/types"
 	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -31,6 +30,35 @@ func (h *BookinHandler) HandleListBookings(c *fiber.Ctx) error {
 	return c.JSON(bookings)
 }
 
+func (h *BookinHandler) HandleCancelBooking(c *fiber.Ctx) error {
+	id := c.Params("id")
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+
+	booking, err := h.store.Booking.GetBookingByID(c.Context(), oid)
+	if err != nil {
+		return err
+	}
+
+	user, err := getAuthUser(c)
+	if err != nil {
+		return err
+	}
+
+	if booking.UserID != user.ID || !user.IsAdmin {
+		return c.Status(fiber.StatusUnauthorized).JSON(map[string]string{"error": "Unauthorized"})
+	}
+
+	err = h.store.Booking.UpdateBooking(c.Context(), oid, bson.M{"canceled": true})
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(map[string]string{"message": "Booking canceled"})
+}
+
 // only owner
 func (h *BookinHandler) HandleRetrieveBooking(c *fiber.Ctx) error {
 	id := c.Params("id")
@@ -47,8 +75,11 @@ func (h *BookinHandler) HandleRetrieveBooking(c *fiber.Ctx) error {
 		return err
 	}
 
-	user, ok := c.Context().Value("user").(*types.User)
-	if !ok || booking.UserID != user.ID {
+	user, err := getAuthUser(c)
+	if err != nil {
+		return err
+	}
+	if booking.UserID != user.ID {
 		return c.Status(fiber.StatusUnauthorized).JSON(map[string]string{"error": "Unauthorized"})
 	}
 
