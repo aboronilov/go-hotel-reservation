@@ -94,6 +94,8 @@ func (s *MongoUserStore) CreateUser(ctx context.Context, user *types.User) (*typ
 	}
 	user.ID = res.InsertedID.(primitive.ObjectID)
 
+	// fmt.Println("User created ---- >", user)
+
 	return user, nil
 }
 

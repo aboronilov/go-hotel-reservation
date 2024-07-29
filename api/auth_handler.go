@@ -52,8 +52,6 @@ func (h *AuthHandler) HandleAuthenticate(c *fiber.Ctx) error {
 		return err
 	}
 
-	// fmt.Println("Auth Params: ", authParams)
-
 	user, err := h.userStore.GetUserByEmail(c.Context(), authParams.Email)
 	if err != nil {
 		fmt.Println("err: ", err)
