@@ -31,10 +31,10 @@ func main() {
 	}
 
 	// stores
-	hotelStore := db.NewMongoHotelStore(client)
-	roomStore := db.NewMongoRoomStore(client, hotelStore)
-	userStore := db.NewMongoUserStore(client)
-	bookingStore := db.NewMongoBookingStore(client)
+	hotelStore := db.NewMongoHotelStore(client, false)
+	roomStore := db.NewMongoRoomStore(client, hotelStore, false)
+	userStore := db.NewMongoUserStore(client, false)
+	bookingStore := db.NewMongoBookingStore(client, false)
 	store := &db.Store{
 		User:    userStore,
 		Hotel:   hotelStore,

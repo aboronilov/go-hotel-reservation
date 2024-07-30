@@ -30,17 +30,16 @@ type MongoUserStore struct {
 	coll   *mongo.Collection
 }
 
-func NewMongoUserStore(client *mongo.Client) *MongoUserStore {
+func NewMongoUserStore(client *mongo.Client, isTest bool) *MongoUserStore {
+	if isTest {
+		return &MongoUserStore{
+			client: client,
+			coll:   client.Database(TestDBNAME).Collection(USERS_COLLECTION),
+		}
+	}
 	return &MongoUserStore{
 		client: client,
 		coll:   client.Database(DBNAME).Collection(USERS_COLLECTION),
-	}
-}
-
-func NewMongoUserTestStore(client *mongo.Client) *MongoUserStore {
-	return &MongoUserStore{
-		client: client,
-		coll:   client.Database(TestDBNAME).Collection(USERS_COLLECTION),
 	}
 }
 

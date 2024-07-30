@@ -27,15 +27,15 @@ func setup(t *testing.T) *testdb {
 		log.Fatal(err)
 	}
 
-	hotelStore := db.NewMongoHotelStore(client)
+	hotelStore := db.NewMongoHotelStore(client, true)
 
 	return &testdb{
 		client: client,
 		store: &db.Store{
-			User:    db.NewMongoUserStore(client),
-			Room:    db.NewMongoRoomStore(client, hotelStore),
+			User:    db.NewMongoUserStore(client, true),
+			Room:    db.NewMongoRoomStore(client, hotelStore, true),
 			Hotel:   hotelStore,
-			Booking: db.NewMongoBookingStore(client),
+			Booking: db.NewMongoBookingStore(client, true),
 		},
 	}
 }

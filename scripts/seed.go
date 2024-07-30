@@ -19,7 +19,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	collections := []string{db.HOTEL_COLLECTION, db.ROOM_COLLECTION, db.USERS_COLLECTION}
+	collections := []string{db.HOTEL_COLLECTION, db.ROOM_COLLECTION, db.USERS_COLLECTION, db.BOOKING_COLLECTION}
 	for _, collection := range collections {
 		err := client.Database(db.DBNAME).Collection(collection).Drop(ctx)
 		if err != nil {
@@ -27,13 +27,13 @@ func main() {
 		}
 	}
 
-	hotelStore := db.NewMongoHotelStore(client)
+	hotelStore := db.NewMongoHotelStore(client, false)
 
 	store := &db.Store{
-		User:    db.NewMongoUserStore(client),
-		Room:    db.NewMongoRoomStore(client, hotelStore),
-		Hotel:   db.NewMongoHotelStore(client),
-		Booking: db.NewMongoBookingStore(client),
+		User:    db.NewMongoUserStore(client, false),
+		Room:    db.NewMongoRoomStore(client, hotelStore, false),
+		Hotel:   db.NewMongoHotelStore(client, false),
+		Booking: db.NewMongoBookingStore(client, false),
 	}
 
 	newAdmin := fixtures.AddUser(store, "Jack", "Bauer", true)
