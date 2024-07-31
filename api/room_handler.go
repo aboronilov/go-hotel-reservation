@@ -58,24 +58,21 @@ func (h *RoomHandler) HandleListRooms(c *fiber.Ctx) error {
 func (h *RoomHandler) HandleBookRoom(c *fiber.Ctx) error {
 	var params BookRoomParams
 	if err := c.BodyParser(&params); err != nil {
-		return err
+		return ErrorBadRequest()
 	}
 
 	roomID, err := primitive.ObjectIDFromHex(c.Params("id"))
 	if err != nil {
-		return err
+		return ErrorNotFound()
 	}
 
 	if err := params.validate(); err != nil {
-		return err
+		return ErrorBadRequest()
 	}
 
 	user, ok := c.Context().Value("user").(*types.User)
 	if !ok {
-		return c.Status(http.StatusInternalServerError).JSON(genericResponse{
-			Message: "Internal server error",
-			Type:    "Error",
-		})
+		return ErrorUnauthorized()
 	}
 
 	ok, err = h.isRoomAvailiable(c.Context(), roomID, params)
@@ -83,10 +80,8 @@ func (h *RoomHandler) HandleBookRoom(c *fiber.Ctx) error {
 		return err
 	}
 	if !ok {
-		return c.Status(http.StatusBadRequest).JSON(genericResponse{
-			Message: fmt.Sprintf("Room %s is already booked between %s and %s", roomID.Hex(), params.FromDate.Format(time.RFC3339), params.TillDate.Format(time.RFC3339)),
-			Type:    "Error",
-		})
+		message := fmt.Sprintf("Room %s is already booked between %s and %s", roomID.Hex(), params.FromDate.Format(time.RFC3339), params.TillDate.Format(time.RFC3339))
+		return NewError(http.StatusBadRequest, message)
 	}
 
 	booking := types.Booking{
@@ -99,7 +94,7 @@ func (h *RoomHandler) HandleBookRoom(c *fiber.Ctx) error {
 
 	inserted, err := h.store.Booking.BookRoom(c.Context(), &booking)
 	if err != nil {
-		return err
+		return ErrorBadRequest()
 	}
 
 	return c.JSON(inserted)

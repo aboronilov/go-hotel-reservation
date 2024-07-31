@@ -28,7 +28,7 @@ func (h *UserHandler) HandleGetUser(c *fiber.Ctx) error {
 	user, err := h.userStore.GetUserByID(c.Context(), id)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			return c.JSON(map[string]string{"error": "not found"})
+			return ErrorNotFound()
 		}
 		return err
 	}
@@ -39,7 +39,7 @@ func (h *UserHandler) HandleGetUser(c *fiber.Ctx) error {
 func (h *UserHandler) HandleListUsers(c *fiber.Ctx) error {
 	users, err := h.userStore.GetUsers(c.Context())
 	if err != nil {
-		return err
+		return ErrorNotFound()
 	}
 
 	return c.JSON(users)
@@ -48,7 +48,7 @@ func (h *UserHandler) HandleListUsers(c *fiber.Ctx) error {
 func (h *UserHandler) HandleCreateUser(c *fiber.Ctx) error {
 	var params types.CreateUserParams
 	if err := c.BodyParser(&params); err != nil {
-		return err
+		return ErrorBadRequest()
 	}
 
 	if errors := params.Validate(); len(errors) != 0 {
@@ -77,18 +77,18 @@ func (h *UserHandler) HandleUpdateUser(c *fiber.Ctx) error {
 
 	id, err := primitive.ObjectIDFromHex(userId)
 	if err != nil {
-		return err
+		return ErrorInvalidID()
 	}
 
 	if err = c.BodyParser(&params); err != nil {
-		return err
+		return ErrorBadRequest()
 	}
 
 	filter := bson.M{"_id": id}
 
 	err = h.userStore.UpdateUserByID(c.Context(), filter, params)
 	if err != nil {
-		return err
+		return ErrorBadRequest()
 	}
 
 	return c.JSON(map[string]string{"msg": fmt.Sprintf("user %s updated", userId)})

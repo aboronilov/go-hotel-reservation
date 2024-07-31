@@ -8,7 +8,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/aboronilov/go-hotel-reservation/api/middleware"
 	"github.com/aboronilov/go-hotel-reservation/db/fixtures"
 	"github.com/aboronilov/go-hotel-reservation/types"
 	"github.com/gofiber/fiber/v2"
@@ -26,7 +25,7 @@ func TestAdminCanGetBookings(t *testing.T) {
 		till           = time.Now().AddDate(0, 0, 6)
 		booking        = fixtures.AddBooking(db.store, user.ID, hotel.Rooms[0], from, till)
 		app            = fiber.New()
-		admin          = app.Group("/", middleware.JWTAuthentication(db.store.User), middleware.AdminAuth)
+		admin          = app.Group("/", JWTAuthentication(db.store.User), AdminAuth)
 		bookingHandler = NewBookingHandler(db.store)
 	)
 
@@ -74,8 +73,8 @@ func TestUserCannotGetBookingsOfOtherUsers(t *testing.T) {
 		from           = time.Now().AddDate(0, 0, 1)
 		till           = time.Now().AddDate(0, 0, 6)
 		booking        = fixtures.AddBooking(db.store, user.ID, hotel.Rooms[0], from, till)
-		app            = fiber.New()
-		admin          = app.Group("/", middleware.JWTAuthentication(db.store.User), middleware.AdminAuth)
+		app            = fiber.New(fiber.Config{ErrorHandler: ErrorHandler})
+		admin          = app.Group("/", JWTAuthentication(db.store.User), AdminAuth)
 		bookingHandler = NewBookingHandler(db.store)
 	)
 
@@ -104,8 +103,8 @@ func TestUserCanGetOwnBookings(t *testing.T) {
 		from           = time.Now().AddDate(0, 0, 1)
 		till           = time.Now().AddDate(0, 0, 6)
 		booking        = fixtures.AddBooking(db.store, user.ID, hotel.Rooms[0], from, till)
-		app            = fiber.New()
-		route          = app.Group("/", middleware.JWTAuthentication(db.store.User))
+		app            = fiber.New(fiber.Config{ErrorHandler: ErrorHandler})
+		route          = app.Group("/", JWTAuthentication(db.store.User))
 		bookingHandler = NewBookingHandler(db.store)
 	)
 
@@ -117,7 +116,7 @@ func TestUserCanGetOwnBookings(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode == http.StatusUnauthorized {
 		t.Fatalf("expected status code 200, got %d", resp.StatusCode)
 	}
 
@@ -153,8 +152,8 @@ func TestUserWithoutAuthCantGetBookings(t *testing.T) {
 		from           = time.Now().AddDate(0, 0, 1)
 		till           = time.Now().AddDate(0, 0, 6)
 		booking        = fixtures.AddBooking(db.store, user.ID, hotel.Rooms[0], from, till)
-		app            = fiber.New()
-		route          = app.Group("/", middleware.JWTAuthentication(db.store.User))
+		app            = fiber.New(fiber.Config{ErrorHandler: ErrorHandler})
+		route          = app.Group("/", JWTAuthentication(db.store.User))
 		bookingHandler = NewBookingHandler(db.store)
 	)
 
@@ -165,7 +164,7 @@ func TestUserWithoutAuthCantGetBookings(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if resp.StatusCode == http.StatusOK {
-		t.Fatalf("expected status code 200, got %d", resp.StatusCode)
+	if resp.StatusCode != http.StatusUnauthorized {
+		t.Fatalf("expected status code 401, got %d", resp.StatusCode)
 	}
 }

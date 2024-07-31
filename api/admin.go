@@ -1,4 +1,4 @@
-package middleware
+package api
 
 import (
 	"github.com/aboronilov/go-hotel-reservation/types"
@@ -8,7 +8,7 @@ import (
 func AdminAuth(c *fiber.Ctx) error {
 	user, ok := c.Context().Value("user").(*types.User)
 	if !ok || !user.IsAdmin {
-		return c.Status(fiber.StatusUnauthorized).JSON(map[string]string{"error": "Unauthorized"})
+		return ErrorUnauthorized()
 	}
 
 	return c.Next()

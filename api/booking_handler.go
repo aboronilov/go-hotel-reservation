@@ -24,7 +24,7 @@ func NewBookingHandler(store *db.Store) *BookinHandler {
 func (h *BookinHandler) HandleListBookings(c *fiber.Ctx) error {
 	bookings, err := h.store.Booking.GetBookings(c.Context(), bson.M{})
 	if err != nil {
-		return err
+		return ErrorNotFound()
 	}
 
 	return c.JSON(bookings)
@@ -34,26 +34,22 @@ func (h *BookinHandler) HandleCancelBooking(c *fiber.Ctx) error {
 	id := c.Params("id")
 	oid, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		return err
+		return ErrorInvalidID()
 	}
 
 	booking, err := h.store.Booking.GetBookingByID(c.Context(), oid)
 	if err != nil {
-		return err
+		return ErrorNotFound()
 	}
 
 	user, err := getAuthUser(c)
-	if err != nil {
-		return err
-	}
-
-	if booking.UserID != user.ID || !user.IsAdmin {
-		return c.Status(fiber.StatusUnauthorized).JSON(map[string]string{"error": "Unauthorized"})
+	if err != nil || booking.UserID != user.ID {
+		return ErrorUnauthorized()
 	}
 
 	err = h.store.Booking.UpdateBooking(c.Context(), oid, bson.M{"canceled": true})
 	if err != nil {
-		return err
+		return ErrorBadRequest()
 	}
 
 	return c.JSON(map[string]string{"message": "Booking canceled"})
@@ -64,23 +60,20 @@ func (h *BookinHandler) HandleRetrieveBooking(c *fiber.Ctx) error {
 	id := c.Params("id")
 	oid, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		return err
+		return ErrorInvalidID()
 	}
 
 	booking, err := h.store.Booking.GetBookingByID(c.Context(), oid)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			return c.JSON(map[string]string{"error": "not found"})
+			return ErrorNotFound()
 		}
 		return err
 	}
 
 	user, err := getAuthUser(c)
-	if err != nil {
-		return err
-	}
-	if booking.UserID != user.ID {
-		return c.Status(fiber.StatusUnauthorized).JSON(map[string]string{"error": "Unauthorized"})
+	if err != nil || booking.UserID != user.ID {
+		return ErrorUnauthorized()
 	}
 
 	return c.JSON(booking)
